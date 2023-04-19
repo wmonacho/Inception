@@ -1,0 +1,16 @@
+version: '3'
+services:
+  nginx:
+    build:
+    ports:
+      -
+    volumes:
+      -
+  mariadb:
+    image:
+    volumes:
+      -
+    networks:
+      -
+  wordpress:
+  
