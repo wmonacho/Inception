@@ -1,16 +1,13 @@
-DOCKER = sudo docker
+DOCKER = docker
 COMPOSE = $(DOCKER) compose -p inception -f srcs/docker-compose.yml
-MARIADB_VOLUME = /Users/wmonacho/data/mariadb
-WORDPRESS_VOLUME = /Users/wmonacho/data/wordpress
+MARIADB_VOLUME = /home/wmonacho/data/mariadb
+WORDPRESS_VOLUME = /home/wmonacho/data/wordpress
 DEPENDENCIES = $(MARIADB_VOLUME) $(WORDPRESS_VOLUME)
 
-all: up
-
-$(MARIADB_VOLUME):
-	mkdir -p $(MARIADB_VOLUME)
-
-$(WORDPRESS_VOLUME):
-	mkdir -p $(WORDPRESS_VOLUME)
+all:
+	mkdir -pv $(MARIADB_VOLUME) &&\
+	mkdir -pv $(WORDPRESS_VOLUME)&&\
+	$(DOCKER) compose -f srcs/docker-compose.yml up -d
 
 ps:
 	$(COMPOSE) ps
@@ -36,17 +33,13 @@ restart: $(DEPENDENCIES)
 up: $(DEPENDENCIES)
 	$(COMPOSE) up --detach --build
 
-down:
-	$(COMPOSE) down
-
 clean:
-	$(COMPOSE) down --rmi all --volumes
+	$(DOCKER) system prune -af
+	$(DOCKER) volume rm srcs_mariadb
+	$(DOCKER) volume rm srcs_wordpress
 
 fclean: clean
-	sudo $(RM) -r /home/soumanso/data/*
-
-prune: down fclean
-	$(DOCKER) system prune -a -f
+	$(RM) -r /home/wmonacho/data/*
 
 re: fclean all
 

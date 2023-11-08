@@ -2,21 +2,20 @@ FROM debian:buster
 
 RUN	apt-get update -y
 RUN	apt-get upgrade -y
-RUN apt-get install -y dumb-init
 RUN	apt-get install -y mariadb-server
-RUN mkdir -p /var/run/mysqld
-RUN chown -R mysql:mysql /var/run/mysqld
+# RUN mkdir -p /var/lib/mysqld
+# RUN chown -R mysql:mysql /var/lib/mysqld
 
-COPY conf/50-server.cnf	/etc/mysql/mariadb.conf.d/50-server.cnf
+ARG SQL_DATABASE
+ARG SQL_PASSWORD
+ARG SQL_USER
 
-#RUN useradd non_root_user --create-home --home-dir /home/non_root_user
-#RUN chown 777 /var/lib/mysql
-#USER non_root_user
-#WORKDIR /home/non_root_user
+# COPY conf/50-server.cnf	/etc/mysql/mariadb.conf.d/50-server.cnf
 
+RUN service mysql start
+RUN mysql -e "CREATE DATABASE IF NOT EXISTS $SQL_DATABASE;"
+RUN mysql -e "CREATE USER IF NOT EXISTS $SQL_USER@'%' IDENTIFIED BY '$SQL_PASSWORD';"
+RUN mysql -e "GRANT ALL PRIVILEGES ON $SQL_DATABASE.* TO $SQL_USER@'%';"
+RUN mysql -e "FLUSH PRIVILEGES;"
 
-ENTRYPOINT [ "/usr/bin/dumb-init", "--"]
-
-CMD [ "bash", "tools/init.sh" ]
-
-CMD ["mysqld"]
+CMD ["mysqld", "--bind-address=0.0.0.0"]
